@@ -6,11 +6,11 @@ export interface LoginCredentials {
 }
 
 export interface RegisterCredentials {
+  username: string;
+  password: string;
+  email: string;
   firstName: string;
   lastName: string;
-  username: string;
-  email: string;
-  password: string;
 }
 
 export interface LoginResponse {
@@ -33,4 +33,5 @@ export interface AuthContextType {
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   isLoading: boolean;
+  setUser: (user: Profile | null) => void;
 }
