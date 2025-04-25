@@ -19,7 +19,7 @@ interface Group {
 
 export default function GroupList() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [groups, setGroups] = useState<Group[]>([
+  const groups = [
     // Temporary mock data
     {
       id: 1,
@@ -33,7 +33,7 @@ export default function GroupList() {
       description: "For study sessions",
       memberCount: 3,
     },
-  ]);
+  ];
 
   return (
     <div className="space-y-4">

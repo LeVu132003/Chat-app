@@ -1,7 +1,7 @@
 export interface FriendRequest {
   id: number;
-  from_user: number;
-  to_user: number;
+  first_name: string;
+  last_name: string;
+  email: string;
   status: "pending" | "accepted" | "rejected";
-  createdAt: string;
 }

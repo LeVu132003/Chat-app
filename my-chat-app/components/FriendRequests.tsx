@@ -5,34 +5,54 @@ import { FriendRequest } from "@/types/friend";
 import { userService } from "@/services/user.service";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export default function FriendRequests() {
   const { token } = useAuth();
   const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [processingIds, setProcessingIds] = useState<number[]>([]);
+
+  const fetchRequests = async () => {
+    if (!token) return;
+
+    try {
+      setIsLoading(true);
+      setError("");
+      const incomingRequests = await userService.getIncomingFriendRequests(
+        token
+      );
+      setRequests(incomingRequests);
+    } catch (err) {
+      console.error("Error fetching friend requests:", err);
+      setError("Failed to load friend requests");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchRequests = async () => {
-      if (!token) return;
-
-      try {
-        setIsLoading(true);
-        setError("");
-        const incomingRequests = await userService.getIncomingFriendRequests(
-          token
-        );
-        setRequests(incomingRequests);
-      } catch (err) {
-        console.error("Error fetching friend requests:", err);
-        setError("Failed to load friend requests");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchRequests();
   }, [token]);
+
+  const handleAccept = async (requestId: number) => {
+    if (!token) return;
+
+    try {
+      setProcessingIds((prev) => [...prev, requestId]);
+      await userService.acceptFriendRequest(token, requestId);
+
+      // Remove the accepted request from the list
+      setRequests((prev) => prev.filter((request) => request.id !== requestId));
+      toast.success("Friend request accepted!");
+    } catch (err) {
+      console.error("Error accepting friend request:", err);
+      toast.error("Failed to accept friend request");
+    } finally {
+      setProcessingIds((prev) => prev.filter((id) => id !== requestId));
+    }
+  };
 
   if (isLoading) {
     return (
@@ -53,7 +73,7 @@ export default function FriendRequests() {
       </div>
     );
   }
-
+  console.log("Incoming requests", requests);
   return (
     <div className="space-y-4">
       {requests.map((request) => (
@@ -63,41 +83,29 @@ export default function FriendRequests() {
         >
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold">
-              {request.from_user
-                ? userService.getUserInitials(request.from_user)
-                : "?"}
+              {request.first_name[0]}
+              {request.last_name[0]}
             </div>
             <div>
               <div className="font-medium text-gray-900">
-                {request.from_user
-                  ? userService.formatUserDisplayName(request.from_user)
-                  : `User #${request.from_user}`}
+                {request.first_name} {request.last_name}
               </div>
-              <div className="text-sm text-gray-500">
-                Sent {new Date(request.createdAt).toLocaleDateString()}
-              </div>
+              <div className="text-sm text-gray-500">{request.email}</div>
             </div>
           </div>
 
           <div className="flex items-center space-x-2">
             <Button
-              variant="outline"
-              size="sm"
-              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-              onClick={() => {
-                /* TODO: Add reject functionality */
-              }}
-            >
-              Reject
-            </Button>
-            <Button
               size="sm"
               className="bg-indigo-600 text-white hover:bg-indigo-700"
-              onClick={() => {
-                /* TODO: Add accept functionality */
-              }}
+              onClick={() => handleAccept(request.id)}
+              disabled={processingIds.includes(request.id)}
             >
-              Accept
+              {processingIds.includes(request.id) ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              ) : (
+                "Accept"
+              )}
             </Button>
           </div>
         </div>

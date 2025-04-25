@@ -57,9 +57,9 @@ export default function FriendsList() {
   if (friends.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-500">You haven't added any friends yet.</p>
+        <p className="text-gray-500">You havent added any friends yet.</p>
         <p className="text-gray-500 mt-2">
-          Use the "Find Users" tab to search and add friends!
+          Use the Find Users tab to search and add friends!
         </p>
       </div>
     );

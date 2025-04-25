@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(accessToken);
       authService.setToken(accessToken);
       await fetchUserProfile(accessToken);
-      router.push("/chat"); // Redirect to chat page after login
+      router.push("/friends"); // Redirect to chat page after login
     } catch (error) {
       console.error("Login error:", error);
       throw error;
@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(accessToken);
       authService.setToken(accessToken);
       await fetchUserProfile(accessToken);
-      router.push("/chat"); // Redirect to chat page after registration
+      router.push("/friends"); // Redirect to chat page after registration
     } catch (error) {
       console.error("Registration error:", error);
       throw error;
