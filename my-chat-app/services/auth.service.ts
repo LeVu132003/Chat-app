@@ -1,13 +1,14 @@
 import {
   LoginCredentials,
   RegisterCredentials,
-  AuthResponse,
+  RegisterResponse,
+  LoginResponse,
 } from "@/types/auth";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const authService = {
-  async login(credentials: LoginCredentials): Promise<AuthResponse> {
+  async login(credentials: LoginCredentials): Promise<LoginResponse> {
     console.log("API_URL", API_URL);
     console.log("login", credentials);
     const response = await fetch(`${API_URL}/v1/auth/login`, {
@@ -17,15 +18,10 @@ export const authService = {
       },
       body: JSON.stringify(credentials),
     });
-
-    if (!response.ok) {
-      throw new Error("Login failed");
-    }
-
     return response.json();
   },
 
-  async register(credentials: RegisterCredentials): Promise<AuthResponse> {
+  async register(credentials: RegisterCredentials): Promise<RegisterResponse> {
     const response = await fetch(`${API_URL}/v1/auth/register`, {
       method: "POST",
       headers: {
@@ -33,11 +29,6 @@ export const authService = {
       },
       body: JSON.stringify(credentials),
     });
-
-    if (!response.ok) {
-      throw new Error("Registration failed");
-    }
-
     return response.json();
   },
 
@@ -49,10 +40,6 @@ export const authService = {
         Authorization: `Bearer ${token}`,
       },
     });
-
-    if (!response.ok) {
-      throw new Error("Logout failed");
-    }
   },
 
   // Helper functions

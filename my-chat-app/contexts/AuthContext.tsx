@@ -6,25 +6,34 @@ import {
   AuthContextType,
   LoginCredentials,
   RegisterCredentials,
-  User,
 } from "@/types/auth";
 import { authService } from "@/services/auth.service";
+import { profileService } from "@/services/profile.service";
+import { Profile } from "@/types/profile";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<Profile | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+
+  const fetchUserProfile = async (authToken: string) => {
+    try {
+      const profile = await profileService.getProfile(authToken);
+      setUser(profile);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
 
   useEffect(() => {
     // Check for token on mount
     const storedToken = authService.getToken();
     if (storedToken) {
       setToken(storedToken);
-      // TODO: You might want to validate the token here
-      // and fetch user data if needed
+      fetchUserProfile(storedToken);
     }
     setIsLoading(false);
   }, []);
@@ -32,9 +41,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (credentials: LoginCredentials) => {
     try {
       const response = await authService.login(credentials);
-      setUser(response.user);
-      setToken(response.token);
-      authService.setToken(response.token);
+      const accessToken = response.access_token;
+      setToken(accessToken);
+      authService.setToken(accessToken);
+      await fetchUserProfile(accessToken);
       router.push("/chat"); // Redirect to chat page after login
     } catch (error) {
       console.error("Login error:", error);
@@ -45,9 +55,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (credentials: RegisterCredentials) => {
     try {
       const response = await authService.register(credentials);
-      setUser(response.user);
-      setToken(response.token);
-      authService.setToken(response.token);
+      const accessToken = response.token;
+      setToken(accessToken);
+      authService.setToken(accessToken);
+      await fetchUserProfile(accessToken);
       router.push("/chat"); // Redirect to chat page after registration
     } catch (error) {
       console.error("Registration error:", error);
