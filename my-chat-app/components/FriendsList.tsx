@@ -4,12 +4,23 @@ import { useEffect, useState } from "react";
 import { User } from "@/types/user";
 import { userService } from "@/services/user.service";
 import { useAuth } from "@/contexts/AuthContext";
+import { MessageSquare } from "lucide-react";
+import { Button } from "./ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
+import Chat from "./Chat";
 
 export default function FriendsList() {
   const { token } = useAuth();
   const [friends, setFriends] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedFriend, setSelectedFriend] = useState<User | null>(null);
 
   useEffect(() => {
     const fetchFriends = async () => {
@@ -73,25 +84,28 @@ export default function FriendsList() {
             </div>
           </div>
 
-          <button
-            className="text-gray-600 hover:text-indigo-600 transition-colors"
-            onClick={() => {
-              /* TODO: Add chat functionality */
-            }}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
-          </button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-gray-600 hover:text-indigo-600 hover:bg-indigo-50"
+                onClick={() => setSelectedFriend(friend)}
+              >
+                <MessageSquare className="h-5 w-5" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>
+                  Chat with {userService.formatUserDisplayName(friend)}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="h-[600px]">
+                <Chat otherUser={friend.username} otherUserId={friend.id} />
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       ))}
     </div>

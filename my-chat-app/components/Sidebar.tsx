@@ -3,15 +3,15 @@
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MessageSquare, Users, UserCircle, LogOut } from "lucide-react";
+import { Users, UserCircle, LogOut, UsersRound } from "lucide-react";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
   const navigation = [
-    { name: "Chat", href: "/chat", icon: MessageSquare },
     { name: "Friends", href: "/friends", icon: Users },
+    { name: "Groups", href: "/groups", icon: UsersRound },
     { name: "Profile", href: "/profile", icon: UserCircle },
   ];
 
