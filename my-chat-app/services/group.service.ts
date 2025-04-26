@@ -1,17 +1,11 @@
-import { Group } from "@/types/group";
+import {
+  CreateGroupData,
+  CreateGroupResponse,
+  Group,
+  GroupDetails,
+} from "@/types/group";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-interface CreateGroupResponse {
-  id: number;
-  name: string;
-  owner: number;
-}
-
-interface CreateGroupData {
-  name: string;
-  members: string[];
-}
 
 class GroupService {
   async getMyGroups(token: string): Promise<Group[]> {
@@ -46,6 +40,22 @@ class GroupService {
 
     if (!response.ok) {
       throw new Error("Failed to create group");
+    }
+
+    return response.json();
+  }
+
+  async getGroupDetails(groupId: number, token: string): Promise<GroupDetails> {
+    const response = await fetch(`${API_URL}/v1/groups/${groupId}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch group details");
     }
 
     return response.json();

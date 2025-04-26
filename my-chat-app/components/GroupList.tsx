@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Group } from "@/types/group";
 import { groupService } from "@/services/group.service";
 import { useAuth } from "@/contexts/AuthContext";
-import { Users, Plus, X, Search, Loader2 } from "lucide-react";
+import { Users, Plus, X, Search, Loader2, UserCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -18,18 +18,31 @@ import { toast } from "sonner";
 import { userService } from "@/services/user.service";
 import { User } from "@/types/user";
 
+interface GroupMember {
+  userId: number;
+  username: string;
+}
+
+interface GroupDetails extends Group {
+  members: GroupMember[];
+}
+
 export default function GroupList() {
   const { token } = useAuth();
   const [groups, setGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isMembersDialogOpen, setIsMembersDialogOpen] = useState(false);
+  const [selectedGroupDetails, setSelectedGroupDetails] =
+    useState<GroupDetails | null>(null);
   const [groupName, setGroupName] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [isLoadingMembers, setIsLoadingMembers] = useState(false);
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -98,6 +111,22 @@ export default function GroupList() {
       toast.error("Failed to create group");
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const handleViewMembers = async (groupId: number) => {
+    if (!token) return;
+
+    try {
+      setIsLoadingMembers(true);
+      const groupDetails = await groupService.getGroupDetails(groupId, token);
+      setSelectedGroupDetails(groupDetails);
+      setIsMembersDialogOpen(true);
+    } catch (err) {
+      console.error("Error fetching group details:", err);
+      toast.error("Failed to load group members");
+    } finally {
+      setIsLoadingMembers(false);
     }
   };
 
@@ -237,6 +266,7 @@ export default function GroupList() {
             <div
               key={group.id}
               className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm hover:bg-gray-50 transition-colors cursor-pointer"
+              onClick={() => handleViewMembers(group.id)}
             >
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold">
@@ -253,6 +283,39 @@ export default function GroupList() {
           ))
         )}
       </div>
+
+      {/* Members Dialog */}
+      <Dialog open={isMembersDialogOpen} onOpenChange={setIsMembersDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {selectedGroupDetails ? selectedGroupDetails.name : "Group"}{" "}
+              Members
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            {isLoadingMembers ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+              </div>
+            ) : selectedGroupDetails ? (
+              <div className="space-y-3">
+                {selectedGroupDetails.members.map((member) => (
+                  <div
+                    key={member.userId}
+                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50"
+                  >
+                    <UserCircle className="w-8 h-8 text-gray-400" />
+                    <div>
+                      <div className="font-medium">@{member.username}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
