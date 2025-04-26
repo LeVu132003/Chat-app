@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { UserPlus, Check, Loader2, Search } from "lucide-react";
 
 export default function UserList() {
-  const { token } = useAuth();
+  const { token, user: currentUser } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState<User[]>([]);
   const [friends, setFriends] = useState<User[]>([]);
@@ -64,7 +64,9 @@ export default function UserList() {
         const results = await userService.searchUsers(token, {
           username: debouncedSearch,
         });
-        setUsers(results);
+        // Filter out current user and sort results
+        const filteredResults = results.filter((u) => u.id !== currentUser?.id);
+        setUsers(filteredResults);
       } catch (err) {
         console.error("Error searching users:", err);
         setError("Failed to search users");
@@ -74,10 +76,16 @@ export default function UserList() {
     };
 
     searchUsers();
-  }, [debouncedSearch, token]);
+  }, [debouncedSearch, token, currentUser?.id]);
 
   const handleSendRequest = async (username: string) => {
     if (!token) return;
+
+    // Double check if request already sent
+    if (outgoingRequests.some((req) => req.username === username)) {
+      toast.error("Friend request already sent to this user");
+      return;
+    }
 
     try {
       setProcessingRequests((prev) => [...prev, username]);
@@ -135,7 +143,7 @@ export default function UserList() {
               </div>
             </div>
 
-            {!isFriend(user.id) && (
+            {!isFriend(user.id) && user.id !== currentUser?.id && (
               <div>
                 {hasOutgoingRequest(user.id) ? (
                   <Button variant="outline" disabled className="text-gray-500">

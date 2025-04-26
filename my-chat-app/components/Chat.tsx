@@ -3,7 +3,6 @@ import { Message } from "@/types/message";
 import { v4 as uuidv4 } from "uuid";
 import EmojiPicker from "emoji-picker-react";
 import { EmojiClickData } from "emoji-picker-react";
-import { useAuth } from "@/contexts/AuthContext";
 import { useSocket } from "@/contexts/SocketContext";
 import { MessageService } from "@/services/message.service";
 
@@ -27,7 +26,6 @@ const Chat = ({ targetID, toUsername, isGroup = false }: ChatProps) => {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
-  const { token } = useAuth();
   const { socket, isConnected } = useSocket();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
