@@ -9,6 +9,7 @@ export interface User {
 
 export interface OutgoingRequestUser {
   id: number;
+  user_id: number;
   username: string;
   first_name: string;
   last_name: string;
