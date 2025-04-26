@@ -1,14 +1,10 @@
 import React, { useState, useEffect, useRef, KeyboardEvent } from "react";
-import {
-  sendMessage,
-  sendGroupMessage,
-  refreshSocketConnection,
-} from "@/utils/socket";
 import { Message } from "@/types/message";
 import { v4 as uuidv4 } from "uuid";
 import EmojiPicker from "emoji-picker-react";
 import { EmojiClickData } from "emoji-picker-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSocket } from "@/contexts/SocketContext";
 import { MessageService } from "@/services/message.service";
 
 interface ChatProps {
@@ -32,6 +28,7 @@ const Chat = ({ targetID, toUsername, isGroup = false }: ChatProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const { token } = useAuth();
+  const { socket, isConnected } = useSocket();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Load message history
@@ -88,21 +85,13 @@ const Chat = ({ targetID, toUsername, isGroup = false }: ChatProps) => {
 
   // Set up socket connection and listeners
   useEffect(() => {
-    setConnectionStatus("connecting");
-    const currentSocket = refreshSocketConnection(token || "");
-
-    if (!currentSocket) {
+    if (!socket) {
       setConnectionStatus("error");
-      setSocketError(
-        "Unable to initialize socket connection - auth token missing"
-      );
+      setSocketError("Socket connection not available");
       return;
     }
 
-    // Set up socket event listeners
-    currentSocket.on("connectionConfirmed", () => {
-      setConnectionStatus("connected");
-    });
+    setConnectionStatus(isConnected ? "connected" : "connecting");
 
     // Handle messages
     const messageHandler = (newMessage: {
@@ -129,13 +118,13 @@ const Chat = ({ targetID, toUsername, isGroup = false }: ChatProps) => {
     };
 
     if (isGroup) {
-      currentSocket.on("groupMessage", messageHandler);
+      socket.on("groupMessage", messageHandler);
     } else {
-      currentSocket.on("directMessage", messageHandler);
+      socket.on("directMessage", messageHandler);
     }
 
     // Handle socket response including errors
-    currentSocket.on(
+    socket.on(
       "response",
       (response: {
         msg_type: string;
@@ -163,31 +152,22 @@ const Chat = ({ targetID, toUsername, isGroup = false }: ChatProps) => {
       }
     );
 
-    // Check connection status after a timeout
-    const checkConnectionTimeout = setTimeout(() => {
-      if (!currentSocket.connected) {
-        setConnectionStatus("error");
-        setSocketError("Connection timed out - server might be unavailable");
-      }
-    }, 5000);
-
     return () => {
-      clearTimeout(checkConnectionTimeout);
-      currentSocket.off("directMessage");
-      currentSocket.off("groupMessage");
-      currentSocket.off("connectionConfirmed");
-      currentSocket.off("response");
+      socket.off("directMessage");
+      socket.off("groupMessage");
+      socket.off("response");
     };
-  }, [targetID, toUsername, token, lastSentMessageId, isGroup]);
+  }, [socket, isConnected, targetID, toUsername, lastSentMessageId, isGroup]);
 
   const isMessageEmpty = (msg: string) => {
     return msg.trim().length === 0;
   };
 
   const handleSendMessage = () => {
-    if (!message || isMessageEmpty(message)) {
+    if (!message || isMessageEmpty(message) || !socket) {
       return;
     }
+
     const messageId = uuidv4();
     setLastSentMessageId(messageId);
 
@@ -209,10 +189,16 @@ const Chat = ({ targetID, toUsername, isGroup = false }: ChatProps) => {
     setConnectionStatus("connected");
 
     // Send the message
-    if (isGroup && token) {
-      sendGroupMessage(Number(targetID), message.trim(), token);
+    if (isGroup) {
+      socket.emit("groupMessage", {
+        groupId: Number(targetID),
+        content: message.trim(),
+      });
     } else {
-      sendMessage(toUsername, message.trim(), token);
+      socket.emit("directMessage", {
+        toUser: toUsername,
+        content: message.trim(),
+      });
     }
 
     setMessage("");
