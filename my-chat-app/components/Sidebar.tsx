@@ -1,12 +1,15 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Users, UserCircle, LogOut, UsersRound } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, logout } = useAuth();
 
   const navigation = [
@@ -19,6 +22,20 @@ export default function Sidebar() {
 
   return (
     <div className="flex flex-col h-screen w-64 bg-white border-r border-gray-200">
+      <div
+        className="flex justify-center p-2 items-center gap-x-2 cursor-pointer"
+        onClick={() => router.push("/")}
+      >
+        <img
+          src="chatchick.png"
+          alt="logo"
+          className="w-10 h-10 object-contain"
+        />
+        <h1 className="text-4xl font-matemasie font-normal">
+          <span className="text-blue-500">Chat</span>
+          <span className="text-yellow-400">Chick</span>
+        </h1>
+      </div>
       {/* User Profile Section */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center space-x-3">

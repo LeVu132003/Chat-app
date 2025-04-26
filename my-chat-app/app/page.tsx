@@ -1,7 +1,9 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function LandingPage() {
+  const router = useRouter();
   return (
     <div className="min-h-screen bg-white">
       {/* Header/Navigation */}
@@ -9,9 +11,18 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex">
-              <div className="flex-shrink-0 flex items-center">
-                <h1 className="text-2xl font-bold text-indigo-600">
-                  ChatChick
+              <div
+                className="flex justify-center p-2 items-center gap-x-2 cursor-pointer"
+                onClick={() => router.push("/")}
+              >
+                <img
+                  src="chatchick.png"
+                  alt="logo"
+                  className="w-10 h-10 object-contain"
+                />
+                <h1 className="text-4xl font-matemasie font-normal">
+                  <span className="text-blue-500">Chat</span>
+                  <span className="text-yellow-400">Chick</span>
                 </h1>
               </div>
             </div>
