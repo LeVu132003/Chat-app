@@ -34,7 +34,7 @@ export default function FriendRequests() {
 
   useEffect(() => {
     fetchRequests();
-  }, [fetchRequests, token]);
+  }, []);
 
   const handleAccept = async (requestId: number) => {
     if (!token) return;
