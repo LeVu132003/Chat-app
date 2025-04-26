@@ -93,7 +93,7 @@ export default function FriendsList() {
         open={!!selectedFriend}
         onOpenChange={(open) => !open && setSelectedFriend(null)}
       >
-        <DialogContent className="sm:max-w-[800px] h-[80vh] flex flex-col p-0">
+        <DialogContent className="sm:max-w-[800px] h-[80vh] flex flex-col p-0 gap-0">
           <DialogHeader className="p-4 border-b">
             <div className="flex items-center justify-between">
               <DialogTitle className="flex items-center gap-3">
@@ -113,14 +113,6 @@ export default function FriendsList() {
                   </>
                 )}
               </DialogTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-gray-500 hover:text-gray-700"
-                onClick={() => setSelectedFriend(null)}
-              >
-                <X className="h-5 w-5" />
-              </Button>
             </div>
           </DialogHeader>
           <div className="flex-1 overflow-hidden">

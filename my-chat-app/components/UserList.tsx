@@ -104,18 +104,6 @@ export default function UserList() {
     return outgoingRequests.some((request) => request.id === userId);
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return <div className="text-red-500 py-4">{error}</div>;
-  }
-
   return (
     <div className="space-y-4">
       <div className="flex items-center space-x-2">
@@ -173,7 +161,13 @@ export default function UserList() {
             )}
           </div>
         ))}
+        {isLoading && (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+          </div>
+        )}
 
+        {error && <div className="text-red-500 py-4">{error}</div>}
         {!isLoading && !error && users.length === 0 && searchTerm && (
           <div className="text-gray-500">No users found</div>
         )}

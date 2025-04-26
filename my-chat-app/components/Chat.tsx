@@ -227,7 +227,7 @@ const Chat = ({ targetID, toUsername }: ChatProps) => {
   return (
     <div className="flex flex-col h-full border rounded">
       {/* Header */}
-      <div className="p-3 border-b flex items-center justify-between bg-gray-50">
+      <div className="p-3 border-b flex justify-end">
         <div className="text-sm">
           {connectionStatus === "connected" && !socketError ? (
             <span className="text-green-600">● Connected</span>
@@ -241,7 +241,7 @@ const Chat = ({ targetID, toUsername }: ChatProps) => {
       </div>
 
       {/* Messages area */}
-      <div className="flex-1 p-3 overflow-y-auto w-full bg-gray-50">
+      <div className="flex-1 p-3 overflow-y-auto w-full ">
         {isLoadingHistory ? (
           <div className="h-full flex items-center justify-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
