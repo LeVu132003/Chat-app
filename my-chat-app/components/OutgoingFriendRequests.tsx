@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { OutgoingRequestUser } from "@/types/user";
 import { userService } from "@/services/user.service";
 import { useAuth } from "@/contexts/AuthContext";
-import { Check, Loader2 } from "lucide-react";
-import { Button } from "./ui/button";
+import { Loader2 } from "lucide-react";
+import { Badge } from "./ui/badge";
 
 export function OutgoingFriendRequests() {
   const [outgoingRequests, setOutgoingRequests] = useState<
@@ -79,10 +79,7 @@ export function OutgoingFriendRequests() {
           </div>
 
           <div className="flex items-center space-x-2">
-            <Button variant="outline" disabled className="text-gray-500">
-              <Check className="w-4 h-4 mr-2" />
-              Request Sent
-            </Button>
+            <Badge variant="outline">Pending</Badge>
           </div>
         </div>
       ))}
