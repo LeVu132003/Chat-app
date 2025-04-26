@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { UserPlus, Check, Loader2, Search } from "lucide-react";
 
 export default function UserList() {
-  const { token, user } = useAuth();
+  const { token } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState<User[]>([]);
   const [friends, setFriends] = useState<User[]>([]);
@@ -64,9 +64,7 @@ export default function UserList() {
         const results = await userService.searchUsers(token, {
           username: debouncedSearch,
         });
-        // Filter out the current user from search results
-        const filteredResults = results.filter((u) => u.id !== user?.id);
-        setUsers(filteredResults);
+        setUsers(results);
       } catch (err) {
         console.error("Error searching users:", err);
         setError("Failed to search users");
@@ -76,7 +74,7 @@ export default function UserList() {
     };
 
     searchUsers();
-  }, [debouncedSearch, token, user?.id]);
+  }, [debouncedSearch, token]);
 
   const handleSendRequest = async (username: string) => {
     if (!token) return;
@@ -103,7 +101,7 @@ export default function UserList() {
   };
 
   const hasOutgoingRequest = (userId: number) => {
-    return outgoingRequests.some((request) => request.user_id === userId);
+    return outgoingRequests.some((request) => request.id === userId);
   };
 
   return (
