@@ -145,7 +145,7 @@ export default function GroupList() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-15rem)]">
+    <div className="flex h-screen">
       {/* Groups List */}
       <div className="w-1/3 border-r pr-4 space-y-4 overflow-y-auto">
         <div className="flex justify-end items-center">
@@ -272,16 +272,17 @@ export default function GroupList() {
             groups.map((group) => (
               <div
                 key={group.id}
-                className={`flex items-center justify-between p-4 bg-white rounded-lg shadow-sm hover:bg-gray-50 transition-colors ${
+                className={`flex items-center justify-between p-4 bg-white rounded-lg shadow-sm hover:bg-gray-50 transition-colors cursor-pointer ${
                   selectedGroup?.id === group.id
                     ? "border-2 border-indigo-600"
                     : ""
                 }`}
+                onClick={() => {
+                  setSelectedGroup(group);
+                  handleViewMembers(group.id);
+                }}
               >
-                <div
-                  className="flex-1 flex items-center space-x-3 cursor-pointer"
-                  onClick={() => setSelectedGroup(group)}
-                >
+                <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold">
                     {group.name.charAt(0).toUpperCase()}
                   </div>
@@ -294,17 +295,6 @@ export default function GroupList() {
                     </div>
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-gray-600 hover:text-indigo-600 hover:bg-indigo-50"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleViewMembers(group.id);
-                  }}
-                >
-                  <Users className="h-5 w-5" />
-                </Button>
               </div>
             ))
           )}
@@ -320,7 +310,7 @@ export default function GroupList() {
             isGroup={true}
           />
         ) : (
-          <div className="h-[calc(100vh-40rem)] flex items-center justify-center text-gray-500">
+          <div className="h-full flex items-center justify-center text-gray-500">
             <p>Select a group to start chatting</p>
           </div>
         )}
