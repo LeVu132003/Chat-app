@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { User } from "@/types/user";
 import { userService } from "@/services/user.service";
 import { useAuth } from "@/contexts/AuthContext";
-import { MessageSquare, X } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import Chat from "./Chat";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { FriendRequest } from "@/types/friend";
 import { userService } from "@/services/user.service";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,7 +14,7 @@ export default function FriendRequests() {
   const [error, setError] = useState("");
   const [processingIds, setProcessingIds] = useState<number[]>([]);
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     if (!token) return;
 
     try {
@@ -30,11 +30,12 @@ export default function FriendRequests() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchRequests();
-  }, []);
+  }, [fetchRequests]);
+
   const handleAccept = async (requestId: number) => {
     if (!token) return;
 
