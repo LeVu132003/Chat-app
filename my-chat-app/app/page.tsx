@@ -10,11 +10,6 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center space-x-2">
-              <Image
-                src="/ChatChick.png"
-                alt="logo"
-                className="w-10 h-10 object-contain"
-              />
               <div
                 className="text-4xl font-normal"
                 style={{ fontFamily: "Matemasie, sans-serif" }}
@@ -79,13 +74,7 @@ export default function LandingPage() {
           </div>
 
           {/* Right Side (Image) */}
-          <div className="relative w-full lg:w-1/2 h-64 sm:h-96 lg:h-auto">
-            <Image
-              src="/귀여운 말장난.jpg"
-              alt="Chat Illustration"
-              className="absolute inset-0 h-full w-full object-cover object-center lg:object-right"
-            />
-          </div>
+          <div className="relative w-full lg:w-1/2 h-64 sm:h-96 lg:h-auto bg-amber-400"></div>
         </div>
       </div>
 
@@ -99,47 +88,6 @@ export default function LandingPage() {
             <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
               Better way to communicate
             </p>
-          </div>
-
-          <div className="mt-10">
-            <div className="space-y-10 md:space-y-0 md:grid md:grid-cols-3 md:gap-x-8 md:gap-y-10">
-              {[
-                {
-                  title: "Real-time messaging",
-                  description:
-                    "Chat with your friends and family in real-time with instant message delivery.",
-                  image: "/home.jpg",
-                },
-                {
-                  title: "User friendly",
-                  description:
-                    "Simple and intuitive interface that makes chatting a breeze.",
-                  image: "/home.jpg",
-                },
-                {
-                  title: "Secure",
-                  description:
-                    "Your messages are encrypted and your privacy is our top priority.",
-                  image: "/home.jpg",
-                },
-              ].map((feature) => (
-                <div key={feature.title} className="relative">
-                  <Image
-                    src={feature.image}
-                    alt={feature.title}
-                    className="w-full h-135 object-cover rounded-lg mb-4"
-                  />
-                  <dt>
-                    <p className="text-lg leading-6 font-medium text-gray-900">
-                      {feature.title}
-                    </p>
-                  </dt>
-                  <dd className="mt-2 text-base text-gray-500">
-                    {feature.description}
-                  </dd>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>
