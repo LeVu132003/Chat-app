@@ -20,7 +20,7 @@ export default function ChatMessage({
       {isOwnMessage && (
         <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center">
           <span className="text-white font-medium">
-            {message.fromUser[0]?.toUpperCase()}
+            {message?.fromUser?.[0]?.toUpperCase()}
           </span>
         </div>
       )}

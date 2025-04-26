@@ -3,8 +3,9 @@
 import UserList from "@/components/UserList";
 import FriendsList from "@/components/FriendsList";
 import FriendRequests from "@/components/FriendRequests";
+import { OutgoingFriendRequests } from "@/components/OutgoingFriendRequests";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, UserPlus, UserCheck } from "lucide-react";
+import { Users, UserPlus, UserCheck, SendHorizontal } from "lucide-react";
 
 export default function FriendsPage() {
   return (
@@ -21,7 +22,11 @@ export default function FriendsPage() {
           </TabsTrigger>
           <TabsTrigger value="requests" className="flex items-center gap-2">
             <UserCheck className="w-4 h-4" />
-            Friend Requests
+            Incoming Requests
+          </TabsTrigger>
+          <TabsTrigger value="outgoing" className="flex items-center gap-2">
+            <SendHorizontal className="w-4 h-4" />
+            Sent Requests
           </TabsTrigger>
           <TabsTrigger value="find" className="flex items-center gap-2">
             <UserPlus className="w-4 h-4" />
@@ -38,6 +43,12 @@ export default function FriendsPage() {
         <TabsContent value="requests">
           <div className="bg-white rounded-lg shadow p-6">
             <FriendRequests />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="outgoing">
+          <div className="bg-white rounded-lg shadow p-6">
+            <OutgoingFriendRequests />
           </div>
         </TabsContent>
 
