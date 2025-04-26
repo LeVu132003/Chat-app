@@ -16,7 +16,6 @@ import {
 import { Input } from "./ui/input";
 import { toast } from "sonner";
 import { userService } from "@/services/user.service";
-import { User } from "@/types/user";
 
 export default function GroupList() {
   const { token } = useAuth();
@@ -26,7 +25,7 @@ export default function GroupList() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState<User[]>([]);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
