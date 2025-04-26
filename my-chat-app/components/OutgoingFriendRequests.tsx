@@ -2,10 +2,7 @@ import { useEffect, useState } from "react";
 import { OutgoingRequestUser } from "@/types/user";
 import { userService } from "@/services/user.service";
 import { useAuth } from "@/contexts/AuthContext";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 
 export function OutgoingFriendRequests() {

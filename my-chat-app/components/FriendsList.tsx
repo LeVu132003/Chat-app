@@ -4,15 +4,9 @@ import { useEffect, useState } from "react";
 import { User } from "@/types/user";
 import { userService } from "@/services/user.service";
 import { useAuth } from "@/contexts/AuthContext";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, X } from "lucide-react";
 import { Button } from "./ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import Chat from "./Chat";
 
 export default function FriendsList() {
@@ -84,30 +78,61 @@ export default function FriendsList() {
             </div>
           </div>
 
-          <Dialog>
-            <DialogTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-gray-600 hover:text-indigo-600 hover:bg-indigo-50"
+            onClick={() => setSelectedFriend(friend)}
+          >
+            <MessageSquare className="h-5 w-5" />
+          </Button>
+        </div>
+      ))}
+
+      <Dialog
+        open={!!selectedFriend}
+        onOpenChange={(open) => !open && setSelectedFriend(null)}
+      >
+        <DialogContent className="sm:max-w-[800px] h-[80vh] flex flex-col p-0">
+          <DialogHeader className="p-4 border-b">
+            <div className="flex items-center justify-between">
+              <DialogTitle className="flex items-center gap-3">
+                {selectedFriend && (
+                  <>
+                    <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold">
+                      {userService.getUserInitials(selectedFriend)}
+                    </div>
+                    <div>
+                      <div className="font-medium">
+                        {userService.formatUserDisplayName(selectedFriend)}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        @{selectedFriend.username}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </DialogTitle>
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-gray-600 hover:text-indigo-600 hover:bg-indigo-50"
-                onClick={() => setSelectedFriend(friend)}
+                className="text-gray-500 hover:text-gray-700"
+                onClick={() => setSelectedFriend(null)}
               >
-                <MessageSquare className="h-5 w-5" />
+                <X className="h-5 w-5" />
               </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>
-                  Chat with {userService.formatUserDisplayName(friend)}
-                </DialogTitle>
-              </DialogHeader>
-              <div className="h-[600px]">
-                <Chat otherUser={friend.username} otherUserId={friend.id} />
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-      ))}
+            </div>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden">
+            {selectedFriend && (
+              <Chat
+                targetID={selectedFriend.id.toString()}
+                toUsername={selectedFriend.username}
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDebounce } from "@/hooks/useDebounce";
 import { toast } from "sonner";
-import { UserPlus, Check, Loader2 } from "lucide-react";
+import { UserPlus, Check, Loader2, Search } from "lucide-react";
 
 export default function UserList() {
   const { token } = useAuth();
@@ -120,8 +120,9 @@ export default function UserList() {
     <div className="space-y-4">
       <div className="flex items-center space-x-2">
         <Input
+          startIcon={Search}
           type="text"
-          placeholder="Search users by username..."
+          placeholder="Search users by username or email..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w"

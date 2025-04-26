@@ -13,22 +13,21 @@ interface DirectMessageResponse {
 
 export class MessageService {
   private static baseUrl =
-    process.env.NEXT_PUBLIC_API_URL || "https://chatchick.azurewebsites.net/v1";
+    process.env.NEXT_PUBLIC_API_URL || "https://chatchick.azurewebsites.net";
 
   /**
    * Lấy tin nhắn trực tiếp với một người dùng cụ thể
    * @param targetUserId - ID của người dùng cần lấy tin nhắn
    * @returns Promise<Message[]>
    */
-  static async getDirectMessages(targetUserId: number): Promise<Message[]> {
+  static async getDirectMessages(targetUserId: string): Promise<Message[]> {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         throw new Error("No authentication token found");
       }
-      targetUserId = 9;
       const response = await fetch(
-        `${this.baseUrl}/direct-messages?with=${targetUserId}`,
+        `${this.baseUrl}/v1/direct-messages?with=${targetUserId}`,
         {
           method: "GET",
           headers: {
@@ -50,7 +49,7 @@ export class MessageService {
         content: msg.content,
         fromUser:
           msg.fromUser === currentUserId ? "You" : `User ${msg.fromUser}`,
-        timestamp: new Date(msg.createdAt),
+        timestamp: new Date(msg.createdAt).toISOString(),
         type: "direct" as MessageType,
         attachment: msg.attachment || undefined,
         attachmentType: msg.attachmentType || undefined,

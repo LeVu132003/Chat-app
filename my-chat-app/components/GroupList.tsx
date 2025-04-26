@@ -10,12 +10,12 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Users } from "lucide-react";
 
-interface Group {
-  id: number;
-  name: string;
-  description?: string;
-  memberCount: number;
-}
+// interface Group {
+//   id: number;
+//   name: string;
+//   description?: string;
+//   memberCount: number;
+// }
 
 export default function GroupList() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);

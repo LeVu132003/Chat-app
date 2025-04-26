@@ -1,11 +1,11 @@
+export type MessageType = "direct" | "group";
+
 export interface Message {
-  id?: number;
+  id: string;
   content: string;
-  fromUser?: string;
-  toUser?: string;
-  createdAt?: string;
-  attachment?: string;
-  attachmentType?: string;
+  fromUser: string;
+  timestamp: string;
+  type: MessageType;
 }
 
 export interface DirectMessage {
