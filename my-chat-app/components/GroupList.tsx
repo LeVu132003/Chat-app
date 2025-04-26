@@ -32,10 +32,6 @@ export default function GroupList() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const { token } = useAuth();
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isMembersDialogOpen, setIsMembersDialogOpen] = useState(false);
   const [selectedGroupDetails, setSelectedGroupDetails] =
@@ -149,13 +145,10 @@ export default function GroupList() {
   return (
     <div className="space-y-4">
       <div className="flex justify-end items-center">
-      <div className="flex justify-end items-center">
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-indigo-600 hover:bg-indigo-700">
-            <Button className="bg-indigo-600 hover:bg-indigo-700">
               <Plus className="w-4 h-4 mr-2" />
-              Create Group
               Create Group
             </Button>
           </DialogTrigger>
@@ -171,78 +164,8 @@ export default function GroupList() {
                   value={groupName}
                   onChange={(e) => setGroupName(e.target.value)}
                 />
-                <Input
-                  placeholder="Enter group name"
-                  value={groupName}
-                  onChange={(e) => setGroupName(e.target.value)}
-                />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Add Members</label>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Search users..."
-                    value={searchTerm}
-                    onChange={(e) => {
-                      setSearchTerm(e.target.value);
-                      handleSearch(e.target.value);
-                    }}
-                    startIcon={Search}
-                  />
-                </div>
-                {/* Selected Members */}
-                {selectedMembers.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {selectedMembers.map((username) => (
-                      <div
-                        key={username}
-                        className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded-md text-sm flex items-center gap-1"
-                      >
-                        {username}
-                        <button
-                          onClick={() =>
-                            setSelectedMembers((prev) =>
-                              prev.filter((u) => u !== username)
-                            )
-                          }
-                          className="text-indigo-600 hover:text-indigo-800"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {/* Search Results */}
-                {isSearching ? (
-                  <div className="flex justify-center py-2">
-                    <Loader2 className="w-5 h-5 animate-spin text-indigo-600" />
-                  </div>
-                ) : (
-                  searchResults.length > 0 && (
-                    <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
-                      {searchResults.map((user) => (
-                        <button
-                          key={user.username}
-                          onClick={() => {
-                            if (!selectedMembers.includes(user.username)) {
-                              setSelectedMembers((prev) => [
-                                ...prev,
-                                user.username,
-                              ]);
-                            }
-                            setSearchTerm("");
-                            setSearchResults([]);
-                          }}
-                          className="w-full text-left px-2 py-1 hover:bg-gray-100 rounded-md text-sm"
-                          disabled={selectedMembers.includes(user.username)}
-                        >
-                          {user.firstName} {user.lastName} (@{user.username})
-                        </button>
-                      ))}
-                    </div>
-                  )
-                )}
                 <label className="text-sm font-medium">Add Members</label>
                 <div className="flex gap-2">
                   <Input
@@ -310,19 +233,6 @@ export default function GroupList() {
                 )}
               </div>
               <Button
-                className="w-full bg-indigo-600 hover:bg-indigo-700"
-                onClick={handleCreateGroup}
-                disabled={
-                  isCreating ||
-                  !groupName.trim() ||
-                  selectedMembers.length === 0
-                }
-              >
-                {isCreating ? (
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                ) : (
-                  <Plus className="w-4 h-4 mr-2" />
-                )}
                 className="w-full bg-indigo-600 hover:bg-indigo-700"
                 onClick={handleCreateGroup}
                 disabled={
