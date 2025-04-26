@@ -11,6 +11,16 @@ interface DirectMessageResponse {
   createdAt: string;
 }
 
+interface GroupMessageResponse {
+  id: number;
+  fromUser: string;
+  content: string;
+  groupId: number;
+  createdAt: string;
+  attachment: string | null;
+  attachmentType: string | null;
+}
+
 export class MessageService {
   private static baseUrl =
     process.env.NEXT_PUBLIC_API_URL || "https://chatchick.azurewebsites.net";
@@ -56,6 +66,47 @@ export class MessageService {
       }));
     } catch (error) {
       console.error("Error fetching direct messages:", error);
+      throw error;
+    }
+  }
+
+  static async getGroupMessages(groupId: string): Promise<Message[]> {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+      const response = await fetch(
+        `${this.baseUrl}/v1/group-messages?group=${groupId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "*/*",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch messages: ${response.statusText}`);
+      }
+
+      const messages: GroupMessageResponse[] = await response.json();
+      const currentUserId = this.getCurrentUserId();
+
+      return messages.map((msg) => ({
+        id: msg.id.toString(),
+        content: msg.content,
+        fromUser:
+          msg.fromUser === currentUserId.toString() ? "You" : msg.fromUser,
+        timestamp: new Date(msg.createdAt).toISOString(),
+        type: "group" as MessageType,
+        groupId: msg.groupId,
+        attachment: msg.attachment || undefined,
+        attachmentType: msg.attachmentType || undefined,
+      }));
+    } catch (error) {
+      console.error("Error fetching group messages:", error);
       throw error;
     }
   }

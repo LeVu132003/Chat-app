@@ -17,6 +17,7 @@ import { Input } from "./ui/input";
 import { toast } from "sonner";
 import { userService } from "@/services/user.service";
 import { User } from "@/types/user";
+import Chat from "./Chat";
 
 interface GroupMember {
   userId: number;
@@ -43,6 +44,7 @@ export default function GroupList() {
   const [isSearching, setIsSearching] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -143,144 +145,174 @@ export default function GroupList() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end items-center">
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-indigo-600 hover:bg-indigo-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Group
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create New Group</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Group Name</label>
-                <Input
-                  placeholder="Enter group name"
-                  value={groupName}
-                  onChange={(e) => setGroupName(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Add Members</label>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Search users..."
-                    value={searchTerm}
-                    onChange={(e) => {
-                      setSearchTerm(e.target.value);
-                      handleSearch(e.target.value);
-                    }}
-                    startIcon={Search}
-                  />
-                </div>
-                {/* Selected Members */}
-                {selectedMembers.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {selectedMembers.map((username) => (
-                      <div
-                        key={username}
-                        className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded-md text-sm flex items-center gap-1"
-                      >
-                        {username}
-                        <button
-                          onClick={() =>
-                            setSelectedMembers((prev) =>
-                              prev.filter((u) => u !== username)
-                            )
-                          }
-                          className="text-indigo-600 hover:text-indigo-800"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {/* Search Results */}
-                {isSearching ? (
-                  <div className="flex justify-center py-2">
-                    <Loader2 className="w-5 h-5 animate-spin text-indigo-600" />
-                  </div>
-                ) : (
-                  searchResults.length > 0 && (
-                    <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
-                      {searchResults.map((user) => (
-                        <button
-                          key={user.username}
-                          onClick={() => {
-                            if (!selectedMembers.includes(user.username)) {
-                              setSelectedMembers((prev) => [
-                                ...prev,
-                                user.username,
-                              ]);
-                            }
-                            setSearchTerm("");
-                            setSearchResults([]);
-                          }}
-                          className="w-full text-left px-2 py-1 hover:bg-gray-100 rounded-md text-sm"
-                          disabled={selectedMembers.includes(user.username)}
-                        >
-                          {user.firstName} {user.lastName} (@{user.username})
-                        </button>
-                      ))}
-                    </div>
-                  )
-                )}
-              </div>
-              <Button
-                className="w-full bg-indigo-600 hover:bg-indigo-700"
-                onClick={handleCreateGroup}
-                disabled={
-                  isCreating ||
-                  !groupName.trim() ||
-                  selectedMembers.length === 0
-                }
-              >
-                {isCreating ? (
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                ) : (
-                  <Plus className="w-4 h-4 mr-2" />
-                )}
+    <div className="flex h-screen">
+      {/* Groups List */}
+      <div className="w-1/3 border-r pr-4 space-y-4 overflow-y-auto">
+        <div className="flex justify-end items-center">
+          <Dialog
+            open={isCreateDialogOpen}
+            onOpenChange={setIsCreateDialogOpen}
+          >
+            <DialogTrigger asChild>
+              <Button className="bg-indigo-600 hover:bg-indigo-700">
+                <Plus className="w-4 h-4 mr-2" />
                 Create Group
               </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <div className="space-y-4">
-        {groups.length === 0 ? (
-          <div className="text-center py-8">
-            <div className="flex flex-col items-center gap-2">
-              <Users className="w-12 h-12 text-gray-400" />
-              <p className="text-gray-500">No groups found</p>
-            </div>
-          </div>
-        ) : (
-          groups.map((group) => (
-            <div
-              key={group.id}
-              className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm hover:bg-gray-50 transition-colors cursor-pointer"
-              onClick={() => handleViewMembers(group.id)}
-            >
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold">
-                  {group.name.charAt(0).toUpperCase()}
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create New Group</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Group Name</label>
+                  <Input
+                    placeholder="Enter group name"
+                    value={groupName}
+                    onChange={(e) => setGroupName(e.target.value)}
+                  />
                 </div>
-                <div>
-                  <div className="font-medium text-gray-900">{group.name}</div>
-                  <div className="text-sm text-gray-500">
-                    {group.members.length} members
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Add Members</label>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Search users..."
+                      value={searchTerm}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        handleSearch(e.target.value);
+                      }}
+                      startIcon={Search}
+                    />
+                  </div>
+                  {/* Selected Members */}
+                  {selectedMembers.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {selectedMembers.map((username) => (
+                        <div
+                          key={username}
+                          className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded-md text-sm flex items-center gap-1"
+                        >
+                          {username}
+                          <button
+                            onClick={() =>
+                              setSelectedMembers((prev) =>
+                                prev.filter((u) => u !== username)
+                              )
+                            }
+                            className="text-indigo-600 hover:text-indigo-800"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {/* Search Results */}
+                  {isSearching ? (
+                    <div className="flex justify-center py-2">
+                      <Loader2 className="w-5 h-5 animate-spin text-indigo-600" />
+                    </div>
+                  ) : (
+                    searchResults.length > 0 && (
+                      <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
+                        {searchResults.map((user) => (
+                          <button
+                            key={user.username}
+                            onClick={() => {
+                              if (!selectedMembers.includes(user.username)) {
+                                setSelectedMembers((prev) => [
+                                  ...prev,
+                                  user.username,
+                                ]);
+                              }
+                              setSearchTerm("");
+                              setSearchResults([]);
+                            }}
+                            className="w-full text-left px-2 py-1 hover:bg-gray-100 rounded-md text-sm"
+                            disabled={selectedMembers.includes(user.username)}
+                          >
+                            {user.firstName} {user.lastName} (@{user.username})
+                          </button>
+                        ))}
+                      </div>
+                    )
+                  )}
+                </div>
+                <Button
+                  className="w-full bg-indigo-600 hover:bg-indigo-700"
+                  onClick={handleCreateGroup}
+                  disabled={
+                    isCreating ||
+                    !groupName.trim() ||
+                    selectedMembers.length === 0
+                  }
+                >
+                  {isCreating ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : (
+                    <Plus className="w-4 h-4 mr-2" />
+                  )}
+                  Create Group
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        <div className="space-y-4">
+          {groups.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="flex flex-col items-center gap-2">
+                <Users className="w-12 h-12 text-gray-400" />
+                <p className="text-gray-500">No groups found</p>
+              </div>
+            </div>
+          ) : (
+            groups.map((group) => (
+              <div
+                key={group.id}
+                className={`flex items-center justify-between p-4 bg-white rounded-lg shadow-sm hover:bg-gray-50 transition-colors cursor-pointer ${
+                  selectedGroup?.id === group.id
+                    ? "border-2 border-indigo-600"
+                    : ""
+                }`}
+                onClick={() => {
+                  setSelectedGroup(group);
+                  handleViewMembers(group.id);
+                }}
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold">
+                    {group.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">
+                      {group.name}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {group.members.length} members
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Chat Area */}
+      <div className="flex-1 pl-4">
+        {selectedGroup ? (
+          <Chat
+            targetID={selectedGroup.id.toString()}
+            toUsername={selectedGroup.name}
+            isGroup={true}
+          />
+        ) : (
+          <div className="h-full flex items-center justify-center text-gray-500">
+            <p>Select a group to start chatting</p>
+          </div>
         )}
       </div>
 

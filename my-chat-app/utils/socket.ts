@@ -37,8 +37,8 @@ const createSocket = (token: string | null) => {
     forceNew: true,
     reconnection: true,
     reconnectionAttempts: 10,
-    reconnectionDelay: 500,
-    timeout: 60000,
+    reconnectionDelay: 1000,
+    timeout: 20000,
     auth: {
       token: token,
     },
@@ -133,6 +133,7 @@ export const sendMessage = (
 export const sendGroupMessage = (
   groupId: number,
   content: string,
+  token: string | null,
   attachment?: string,
   attachmentType?: string
 ) => {

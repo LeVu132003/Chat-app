@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useRef, KeyboardEvent } from "react";
-import { sendMessage, refreshSocketConnection } from "@/utils/socket";
+import {
+  sendMessage,
+  sendGroupMessage,
+  refreshSocketConnection,
+} from "@/utils/socket";
 import { Message } from "@/types/message";
 import { v4 as uuidv4 } from "uuid";
 import EmojiPicker from "emoji-picker-react";
@@ -10,9 +14,10 @@ import { MessageService } from "@/services/message.service";
 interface ChatProps {
   targetID: string;
   toUsername: string;
+  isGroup?: boolean;
 }
 
-const Chat = ({ targetID, toUsername }: ChatProps) => {
+const Chat = ({ targetID, toUsername, isGroup = false }: ChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState("");
   const [connectionStatus, setConnectionStatus] = useState<
@@ -34,7 +39,9 @@ const Chat = ({ targetID, toUsername }: ChatProps) => {
     const loadMessageHistory = async () => {
       try {
         setIsLoadingHistory(true);
-        const history = await MessageService.getDirectMessages(targetID);
+        const history = isGroup
+          ? await MessageService.getGroupMessages(targetID)
+          : await MessageService.getDirectMessages(targetID);
         setMessages(history);
       } catch (error) {
         console.error("Failed to load message history:", error);
@@ -45,7 +52,7 @@ const Chat = ({ targetID, toUsername }: ChatProps) => {
     };
 
     loadMessageHistory();
-  }, [targetID]);
+  }, [targetID, isGroup]);
 
   // Emoji picker handler
   const onEmojiClick = (emojiData: EmojiClickData) => {
@@ -81,10 +88,8 @@ const Chat = ({ targetID, toUsername }: ChatProps) => {
 
   // Set up socket connection and listeners
   useEffect(() => {
-    // Set current username
-    // Ensure socket connection is fresh with current session token
     setConnectionStatus("connecting");
-    const currentSocket = refreshSocketConnection(token);
+    const currentSocket = refreshSocketConnection(token || "");
 
     if (!currentSocket) {
       setConnectionStatus("error");
@@ -99,23 +104,35 @@ const Chat = ({ targetID, toUsername }: ChatProps) => {
       setConnectionStatus("connected");
     });
 
-    // Handle direct messages
-    currentSocket.on(
-      "directMessage",
-      (newMessage: { fromUser: string; content: string; toUser: string }) => {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: uuidv4(),
-            content: newMessage.content,
-            fromUser:
-              newMessage.fromUser === toUsername ? newMessage.fromUser : "You",
-            timestamp: new Date().toISOString(),
-            type: "direct",
-          },
-        ]);
-      }
-    );
+    // Handle messages
+    const messageHandler = (newMessage: {
+      fromUser: string;
+      content: string;
+      toUser?: string;
+      groupId?: number;
+    }) => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: uuidv4(),
+          content: newMessage.content,
+          fromUser: isGroup
+            ? newMessage.fromUser
+            : newMessage.fromUser === toUsername
+            ? newMessage.fromUser
+            : "You",
+          timestamp: new Date().toISOString(),
+          type: isGroup ? "group" : "direct",
+          groupId: isGroup ? Number(targetID) : undefined,
+        },
+      ]);
+    };
+
+    if (isGroup) {
+      currentSocket.on("groupMessage", messageHandler);
+    } else {
+      currentSocket.on("directMessage", messageHandler);
+    }
 
     // Handle socket response including errors
     currentSocket.on(
@@ -157,13 +174,13 @@ const Chat = ({ targetID, toUsername }: ChatProps) => {
     return () => {
       clearTimeout(checkConnectionTimeout);
       currentSocket.off("directMessage");
+      currentSocket.off("groupMessage");
       currentSocket.off("connectionConfirmed");
       currentSocket.off("response");
     };
-  }, [targetID, toUsername, token, lastSentMessageId]);
+  }, [targetID, toUsername, token, lastSentMessageId, isGroup]);
 
   const isMessageEmpty = (msg: string) => {
-    // Remove whitespace and check if message is empty
     return msg.trim().length === 0;
   };
 
@@ -171,31 +188,34 @@ const Chat = ({ targetID, toUsername }: ChatProps) => {
     if (!message || isMessageEmpty(message)) {
       return;
     }
+    const messageId = uuidv4();
+    setLastSentMessageId(messageId);
 
-    if (toUsername) {
-      const messageId = uuidv4();
-      setLastSentMessageId(messageId);
+    // Add message to local state optimistically
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: messageId,
+        content: message.trim(),
+        fromUser: "You",
+        timestamp: new Date().toISOString(),
+        type: isGroup ? "group" : "direct",
+        groupId: isGroup ? Number(targetID) : undefined,
+      },
+    ]);
 
-      // Add message to local state optimistically
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: messageId,
-          content: message.trim(),
-          fromUser: "You",
-          timestamp: new Date().toISOString(),
-          type: "direct",
-        },
-      ]);
+    // Clear any previous errors
+    setSocketError("");
+    setConnectionStatus("connected");
 
-      // Clear any previous errors
-      setSocketError("");
-      setConnectionStatus("connected");
-
-      // Send the message to the target user using username
+    // Send the message
+    if (isGroup && token) {
+      sendGroupMessage(Number(targetID), message.trim(), token);
+    } else {
       sendMessage(toUsername, message.trim(), token);
-      setMessage("");
     }
+
+    setMessage("");
   };
 
   const handleKeyPress = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -210,16 +230,12 @@ const Chat = ({ targetID, toUsername }: ChatProps) => {
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current;
     if (textarea) {
-      // Reset height to auto to get the correct scrollHeight
       textarea.style.height = "auto";
-
-      // Calculate new height (capped at 4 lines, approximately 96px)
       const newHeight = Math.min(textarea.scrollHeight, 96);
       textarea.style.height = `${newHeight}px`;
     }
   };
 
-  // Adjust height when message changes
   useEffect(() => {
     adjustTextareaHeight();
   }, [message]);
@@ -227,7 +243,11 @@ const Chat = ({ targetID, toUsername }: ChatProps) => {
   return (
     <div className="flex flex-col h-full border rounded">
       {/* Header */}
-      <div className="p-3 border-b flex justify-end">
+      <div className="p-3 border-b flex justify-between items-center">
+        <div className="font-medium">
+          {isGroup ? "👥 " : "👤 "}
+          {toUsername}
+        </div>
         <div className="text-sm">
           {connectionStatus === "connected" && !socketError ? (
             <span className="text-green-600">● Connected</span>
@@ -241,7 +261,7 @@ const Chat = ({ targetID, toUsername }: ChatProps) => {
       </div>
 
       {/* Messages area */}
-      <div className="flex-1 p-3 overflow-y-auto w-full ">
+      <div className="flex-1 p-3 overflow-y-auto w-full">
         {isLoadingHistory ? (
           <div className="h-full flex items-center justify-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
@@ -257,13 +277,18 @@ const Chat = ({ targetID, toUsername }: ChatProps) => {
               className={`mb-3 ${msg.fromUser === "You" ? "text-right" : ""}`}
             >
               <div
-                className={` p-3 rounded-lg max-w-full ${
+                className={`p-3 rounded-lg max-w-full ${
                   msg.fromUser === "You"
                     ? "bg-blue-500 text-white rounded-br-none justify-self-end"
+                    : msg.fromUser === "System"
+                    ? "bg-gray-200 text-center w-full"
                     : "bg-gray-300 text-black rounded-bl-none justify-self-start"
                 }`}
               >
-                <div className=" whitespace-pre-wrap break-words">
+                {msg.fromUser !== "You" && msg.fromUser !== "System" && (
+                  <div className="text-xs font-medium mb-1">{msg.fromUser}</div>
+                )}
+                <div className="whitespace-pre-wrap break-words">
                   {msg.content}
                 </div>
                 <div
@@ -297,7 +322,9 @@ const Chat = ({ targetID, toUsername }: ChatProps) => {
               ref={textareaRef}
               rows={1}
               className="flex-1 border rounded-l p-2 resize-none overflow-y-auto transition-all duration-200"
-              placeholder="Type a message... (Press Shift + Enter for new line)"
+              placeholder={`Type a message to ${
+                isGroup ? "group" : ""
+              } ${toUsername}... (Press Shift + Enter for new line)`}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyPress={handleKeyPress}
